@@ -31,6 +31,7 @@ gh (Engelstraenen), sjinn in Chrome eingeloggt.
 
 ## 9. Entschieden
 - 23.11.2026: Name FIRSTWERK, Stadt Dortmund (Annahme).
+- 23.11.2026: Storyboard 1 zu normal, 4 Helmkamera abgelehnt. Eugen will Vorschau-Seiten zu 2 Sturmnacht und 3 Von oben. Bilder gratis (975 Credits abgelehnt).
 
 ## 10. Ablage
 Code: Dropbox/CLAUDE/Projekte/FIRSTWERK · Storyboards: konzepte/
