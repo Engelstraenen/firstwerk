@@ -29,8 +29,12 @@ gh (Engelstraenen), sjinn in Chrome eingeloggt.
 - Prüfen: `python3 tools/check.py <url> <ordner>`
 - sjinn-Warteschlange: tools/sjinn_fw.js in den sjinn-Tab einspielen, `FWQ.go()`. Einspielen ohne Abtippen: im Tab ein `<input type=file id=fwjs aria-label="FW script loader">` anlegen, Datei per Chrome-`file_upload` hineinladen, dann `(0,eval)(await fwjs.files[0].text())` (getestet 24.11.2026). Edits mit Referenz: Bild per `file_upload` in den Asset-Dialog laden (neuestes steht vorn, per Dateigröße prüfen), dann `FWQ.addRef('<ID>', '<url>')`.
 
+## 7b. Live
+- GitHub: github.com/Engelstraenen/firstwerk (öffentlich) · Pages: https://engelstraenen.github.io/firstwerk/ (Branch gh-pages per `git subtree split --prefix site -b gh-pages` + `git push -f origin gh-pages`)
+
 ## 8. Offene Fragen
-- Wahl Storyboard FWSB-1 Eindecken / FWSB-2 Sturmnacht / FWSB-3 Von oben.
+- Welche Vorschau-Variante (Sturmnacht / Von oben) wird ausgebaut?
+- Videos FWV-1…5 (konzepte/video-prompts.md) auf Dreamina, Konto seit 24.11. 06:35 dauerhaft belegt.
 
 ## 9. Entschieden
 - 23.11.2026: Name FIRSTWERK, Stadt Dortmund (Annahme).
