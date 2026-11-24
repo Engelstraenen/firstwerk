@@ -32,7 +32,7 @@
 .flow li b{grid-column:2;color:var(--ink);font:700 18px/1.2 var(--f-head)}
 .flow li::before{counter-increment:f;content:counter(f);grid-row:span 2;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1px solid var(--accent);color:var(--accent);font-weight:700}
 .flow li.on{opacity:1}
-@media (max-width:700px){.spot span{left:-70px;top:66px}.panel{bottom:16px}}
+@media (max-width:700px){.spot span{left:0;top:66px;transform:translateX(-50%)}.panel{bottom:16px}}
 @media (max-height:500px){.flow{display:none}}
 
 /* Konfigurator */

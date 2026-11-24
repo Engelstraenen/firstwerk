@@ -17,12 +17,14 @@ for f in sorted(glob.glob(SRC + '/*')):
         x = im if im.width <= w else im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
         x.save(out, 'WEBP', quality=q, method=6)
     print(k, im.size, '->', os.path.getsize(big) // 1024, 'KB /', os.path.getsize(mob) // 1024, 'KB')
-    if k == 's5':  # wärmster Fleck = höchste Rot-minus-Blau-Helligkeit (grob gerastert)
-        s = im.resize((160, 90)); px = s.load(); best = (-1, 0, 0)
+    if k == 's5':  # wärmster Bereich = Rot-minus-Blau, weichgezeichnet (einzelne Randpixel zählen nicht)
+        from PIL import ImageFilter
+        s = im.resize((160, 90)); px = s.load(); h = Image.new('L', (160, 90)); hp = h.load()
         for y in range(90):
             for xx in range(160):
-                r, g, b = px[xx, y]; v = r + g * .6 - b
-                if v > best[0]: best = (v, xx, y)
+                r, g, b = px[xx, y]; hp[xx, y] = max(0, min(255, int((r + g * .6 - b + 255) / 2.6)))
+        h = h.filter(ImageFilter.GaussianBlur(4)); hp = h.load()
+        best = max((hp[xx, y], xx, y) for y in range(90) for xx in range(160))
         geo['s5'] = {'x': round(best[1] / 160 * 100, 1), 'y': round(best[2] / 90 * 100, 1)}
 if geo:
     open(os.path.join(R, 'site/assets/js/geo.js'), 'w').write('window.FW_GEO=' + json.dumps(geo) + ';\n')

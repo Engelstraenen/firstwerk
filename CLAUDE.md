@@ -24,7 +24,10 @@ gh (Engelstraenen), sjinn in Chrome eingeloggt.
 3 Storyboards (Eugen wählt/mischt) → First Frames 4K → Video-Drafts gratis → Seite bauen → Storyboard-Abgleich → GitHub Pages.
 
 ## 7. Befehle
-(folgt mit dem ersten Code)
+- Vorschau: `python3 -m http.server 4392 --directory site --bind 127.0.0.1` (Port 4392)
+- Bilder: `python3 tools/assets.py` (assets-roh/4k -> site/assets/img)
+- Prüfen: `python3 tools/check.py <url> <ordner>`
+- sjinn-Warteschlange: tools/sjinn_fw.js in den sjinn-Tab einspielen, `FWQ.go()`
 
 ## 8. Offene Fragen
 - Wahl Storyboard FWSB-1 Eindecken / FWSB-2 Sturmnacht / FWSB-3 Von oben.
