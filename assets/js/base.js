@@ -87,13 +87,16 @@ const FW = (() => {
   document.querySelectorAll('[data-apply]').forEach(apply);
 
   // Punkt im 16:9-Bild (object-fit:cover) -> Position im Element in %
-  function coverPos(el, x, y, ar = 16 / 9) {
-    const W = el.clientWidth, H = el.clientHeight, s = Math.max(W / (H * ar), 1) , iw = Math.max(W, H * ar), ih = iw / ar;
-    return [((x / 100 * iw) - (iw - W) / 2) / W * 100, ((y / 100 * ih) - (ih - H) / 2) / H * 100];
-  }
-  function spot(sec, G) {
-    if (!sec || !G) return; const st = sec.querySelector('.stick') || sec;
-    const set = () => { const [x, y] = coverPos(st, G.x, G.y); sec.style.setProperty('--sx', x.toFixed(1) + '%'); sec.style.setProperty('--sy', y.toFixed(1) + '%'); };
+  // Bild mit object-fit:cover; Ausschnitt wird so verschoben, dass die Fundstelle (x/y in % des Bildes) sichtbar bleibt
+  function spot(sec, G, ar = 16 / 9) {
+    if (!sec || !G) return; const st = sec.querySelector('.stick') || sec, imgs = st.querySelectorAll('img.layer');
+    const set = () => {
+      const W = st.clientWidth, H = st.clientHeight, iw = Math.max(W, H * ar), ih = iw / ar;
+      const px = iw > W + 1 ? clamp((G.x / 100 * iw - W * .55) / (iw - W), 0, 1) : .5, py = ih > H + 1 ? clamp((G.y / 100 * ih - H * .45) / (ih - H), 0, 1) : .5;
+      imgs.forEach(i => i.style.objectPosition = (px * 100).toFixed(1) + '% ' + (py * 100).toFixed(1) + '%');
+      sec.style.setProperty('--sx', ((G.x / 100 * iw - (iw - W) * px) / W * 100).toFixed(1) + '%');
+      sec.style.setProperty('--sy', ((G.y / 100 * ih - (ih - H) * py) / H * 100).toFixed(1) + '%');
+    };
     set(); addEventListener('resize', set);
   }
   return { clamp, seg, ease, scene, kinetic, spot };
