@@ -32,7 +32,8 @@
     if (!document.querySelector('[role=dialog]')) await click('Add reference images', 1500);
     const dlg = document.querySelector('[role=dialog]'); if (!dlg) return 'NODLG';
     const clr = [...dlg.querySelectorAll('button')].find(b => /Clear selection/i.test(b.innerText)); if (clr) { clr.click(); await sleep(600); }
-    const img = [...dlg.querySelectorAll('img')].find(i => i.src === src);
+    let img = [...dlg.querySelectorAll('img')].find(i => i.src === src);
+    for (let k = 0; !img && k < 8; k++) { const lm = [...dlg.querySelectorAll('button')].find(b => /Load more/i.test(b.innerText)); if (!lm) break; lm.click(); await sleep(2500); img = [...dlg.querySelectorAll('img')].find(i => i.src === src); }
     if (img) { let c = img; for (let k = 0; k < 7; k++) { c = c.parentElement; const sb = c && c.querySelector('button[aria-label^="Select image"]'); if (sb) { sb.click(); break; } } await sleep(600); }
     const use = [...dlg.querySelectorAll('button')].find(b => /^Use \d+ image|Apply selection/i.test(b.innerText.trim()));
     if (img && use && !use.disabled) { use.click(); await sleep(900); return 'ok'; }
