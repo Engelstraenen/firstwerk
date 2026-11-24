@@ -1,6 +1,6 @@
 // FIRSTWERK sjinn-Warteschlange (Stand 23.11.2026). Einspielen in https://sjinn.ai/tool-mode/nano-banana-2.1
-// Worker-Timer (läuft im Hintergrund-Tab), Toasts werden entfernt, Annahme per „View details“, Ergebnisse in localStorage FW_RES.
-// Status: FWQ.s  ·  Stop: FWQ.run = 0
+// Worker-Timer (läuft im Hintergrund-Tab), Limit per MutationObserver, Annahme per „View details“, Ergebnisse in localStorage FW_RES.
+// Status: FWQ.s  ·  Stop: FWQ.run = 0  ·  Edit mit Referenz: FWQ.addRef('FWM-S2', '<url im Asset-Dialog>')
 (() => {
   const wk = new Worker(URL.createObjectURL(new Blob(['onmessage=e=>setTimeout(()=>postMessage(e.data.id),e.data.ms)'])));
   let n = 0; const cb = {}; wk.onmessage = e => { cb[e.data](); delete cb[e.data]; };
@@ -15,7 +15,27 @@
     'FWM-O5A': 'A modern German detached house with a steep pitched roof covered in dark natural slate, clean white plaster facade, large windows, neat garden, soft overcast daylight, house centered, camera straight from the front at a slight elevation, plain calm sky.',
     'FWM-O7': 'A confident young female roofer in her early twenties in modern dark work clothes, helmet and safety harness sits on the ridge of a slate roof above a German city at sunset, looking into the distance, warm golden light, cool urban skyline below, cinematic, space for a headline on the left.'
   };
-  const Q = window.FWQ = { s: 'init', log: [], todo: JSON.parse(localStorage.FW_TODO || 'null') || Object.keys(MOT) };
+  // Edit-Aufträge: Referenz = URL eines Bildes im Asset-Dialog (vorher per file_upload hochladen, neuestes steht vorn)
+  const REF = JSON.parse(localStorage.FW_REF || '{}');  // z. B. {'FWM-S2':'https://edit.comfyonline.app/<id>.jpg'}
+  const ED = ' Same photorealistic style, same lens, same light direction as the reference. Modern German roofing reality, roofers in modern dark work clothes, helmets and full fall-protection harnesses. No text, no letters, no logos, no watermark, no clichés, not CGI.';
+  Object.assign(MOT, {
+    'FWM-S2': 'Edit the reference image: keep the house, the roof, the camera angle, the framing, the street, the trees and the stormy night lighting exactly the same. Change only: two roofers secured with ropes kneel on the roof and pull a large bright orange tarp over the hole in the roof, fixing it with wooden battens, rain and wind, bright headlamps, an anthracite service van with an orange warning light parked in the street below.' + ED,
+    'FWM-S3': 'Edit the reference image: keep the house, the roof shape, the camera angle, the framing, the street and the trees exactly the same. Change only: it is now the calm early morning after the storm, soft clear daylight with a hint of sunrise, the street still wet, the roof is completely repaired with new tiles that match the old ones, no hole, no tarp, no people, peaceful.' + ED
+  });
+  const Q = window.FWQ = { s: 'init', log: [], REF, todo: JSON.parse(localStorage.FW_TODO || 'null') || Object.keys(MOT) };
+  Q.addRef = (id, url) => { REF[id] = url; localStorage.FW_REF = JSON.stringify(REF); if (!Q.todo.includes(id)) Q.todo.push(id); localStorage.FW_TODO = JSON.stringify(Q.todo); return Q.todo; };
+  const clearRefs = async () => { for (let k = 0; k < 6; k++) { const b = [...document.querySelectorAll('button')].find(b => /^Remove Image/.test(b.getAttribute('aria-label') || '')); if (!b) break; b.click(); await sleep(500); } };
+  const setRef = async src => {
+    if (!document.querySelector('[role=dialog]')) await click('Add reference images', 1500);
+    const dlg = document.querySelector('[role=dialog]'); if (!dlg) return 'NODLG';
+    const clr = [...dlg.querySelectorAll('button')].find(b => /Clear selection/i.test(b.innerText)); if (clr) { clr.click(); await sleep(600); }
+    const img = [...dlg.querySelectorAll('img')].find(i => i.src === src);
+    if (img) { let c = img; for (let k = 0; k < 7; k++) { c = c.parentElement; const sb = c && c.querySelector('button[aria-label^="Select image"]'); if (sb) { sb.click(); break; } } await sleep(600); }
+    const use = [...dlg.querySelectorAll('button')].find(b => /^Use \d+ image|Apply selection/i.test(b.innerText.trim()));
+    if (img && use && !use.disabled) { use.click(); await sleep(900); return 'ok'; }
+    const x = [...dlg.querySelectorAll('button')].find(b => b.innerText.trim() === 'Cancel' || b.getAttribute('aria-label') === 'Close'); x && x.click(); await sleep(600); return 'NOIMG';
+  };
+  const closeDlg = async () => { const d = document.querySelector('[role=dialog]'); if (!d) return; const x = [...d.querySelectorAll('button')].find(b => b.getAttribute('aria-label') === 'Close' || b.innerText.trim() === 'Cancel'); x && x.click(); await sleep(600); };
   const btns = () => [...document.querySelectorAll('button,[role=button]')];
   const btn = t => btns().find(b => ((b.getAttribute('aria-label') || '') + '|' + (b.title || '') + '|' + b.innerText).toLowerCase().includes(t.toLowerCase()));
   const click = async (t, w = 800) => { const b = btn(t); if (b) { b.click(); await sleep(w); } return !!b; };
@@ -25,8 +45,12 @@
     if (!/Unlimited · On/.test(bar())) { await click('Unlimited'); const o = [...document.querySelectorAll('*')].find(e => e.children.length === 0 && (e.innerText || '').trim() === 'No credits consumed'); o && o.click(); await sleep(800); }
     await click('Aspect ratio'); await click('16:9'); await click('Resolution'); await click('4K resolution');
   };
-  const clearToasts = () => document.querySelectorAll('.Toastify__toast,[data-sonner-toast]').forEach(t => t.remove());
-  const limit = () => /maximum limit of 5 concurrent/.test([...document.querySelectorAll('.Toastify__toast,[data-sonner-toast]')].map(t => t.innerText).join('|'));
+  // Limit-Meldung per MutationObserver zählen (Toast-Klasse unzuverlässig, Toasts nie entfernen: React stürzt sonst ab)
+  if (window.__fwObs) window.__fwObs.disconnect();
+  window.__fwLim = window.__fwLim || 0;
+  window.__fwObs = new MutationObserver(ms => { for (const m of ms) for (const n of m.addedNodes) if (/maximum limit of 5 concurrent/.test(n.textContent || '')) { window.__fwLim++; return; } });
+  window.__fwObs.observe(document.body, { childList: true, subtree: true });
+  const clearToasts = () => {};
   const res = () => { const o = JSON.parse(localStorage.FW_RES || '{}'); for (const im of document.querySelectorAll('img')) { const m = (im.alt || '').match(/^(FWM-[A-Z0-9]+) /); if (m && im.src.includes('/result/')) o[m[1]] = im.src.split('?')[0]; } localStorage.FW_RES = JSON.stringify(o); return o; };
   const details = async () => { const out = []; for (const e of [...document.querySelectorAll('*')].filter(e => e.children.length === 0 && (e.innerText || '').trim() === 'Generating')) { const c = e.parentElement.parentElement.parentElement; const v = c.querySelector('[aria-label="View details"],[title="View details"]'); if (!v) continue; v.click(); await sleep(1500); const t = document.body.innerText, i = t.indexOf('Prompt\n'); out.push(i >= 0 ? t.slice(i + 7, i + 20).trim() : '?'); const x = btns().find(b => /close/i.test(b.getAttribute('aria-label') || '')); x && x.click(); await sleep(800); } return out; };
   Q.res = res; Q.details = details;
@@ -39,12 +63,13 @@
       const run = await details(); const mine = run.filter(x => x.startsWith('FWM-'));
       const next = Q.todo.find(id => !run.some(x => x.startsWith(id)));
       if (!next || mine.length >= 2) { Q.s = 'läuft: ' + mine.join(',') + ' ' + new Date().toLocaleTimeString(); await sleep(120000); continue; }
-      clearToasts();
+      clearToasts(); await closeDlg(); await clearRefs();
+      if (REF[next]) { const r = await setRef(REF[next]); if (r !== 'ok') { Q.s = 'Referenz fehlt ' + next + ' ' + r; Q.todo = Q.todo.filter(i => i !== next).concat(next); await sleep(60000); continue; } }
       const ta = document.querySelector('textarea'); const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
       set.call(ta, ''); ta.dispatchEvent(new Event('input', { bubbles: true })); await sleep(300);
-      set.call(ta, next + ' ' + MOT[next] + ST); ta.dispatchEvent(new Event('input', { bubbles: true })); await sleep(1200);
-      const g = [...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Generate'); g && g.click(); await sleep(8000);
-      if (limit()) { clearToasts(); Q.s = 'Konto voll ' + new Date().toLocaleTimeString(); await sleep(90000); continue; }
+      set.call(ta, next + ' ' + MOT[next] + (REF[next] ? '' : ST)); ta.dispatchEvent(new Event('input', { bubbles: true })); await sleep(1200);
+      const lim0 = window.__fwLim; const g = [...document.querySelectorAll('button')].find(b => b.innerText.trim() === 'Generate'); g && g.click(); await sleep(8000);
+      if (window.__fwLim > lim0) { Q.s = 'Konto voll ' + new Date().toLocaleTimeString(); await sleep(90000); continue; }
       const after = await details();
       if (after.some(x => x.startsWith(next))) { Q.log.push(next + ' angenommen ' + new Date().toLocaleTimeString()); Q.s = 'gesendet ' + next; await sleep(20000); }
       else { Q.s = 'nicht angenommen ' + next + ' ' + new Date().toLocaleTimeString(); await sleep(90000); }

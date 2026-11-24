@@ -27,7 +27,7 @@ gh (Engelstraenen), sjinn in Chrome eingeloggt.
 - Vorschau: `python3 -m http.server 4392 --directory site --bind 127.0.0.1` (Port 4392)
 - Bilder: `python3 tools/assets.py` (assets-roh/4k -> site/assets/img)
 - Prüfen: `python3 tools/check.py <url> <ordner>`
-- sjinn-Warteschlange: tools/sjinn_fw.js in den sjinn-Tab einspielen, `FWQ.go()`
+- sjinn-Warteschlange: tools/sjinn_fw.js in den sjinn-Tab einspielen, `FWQ.go()`. Einspielen ohne Abtippen: im Tab ein `<input type=file id=fwjs aria-label="FW script loader">` anlegen, Datei per Chrome-`file_upload` hineinladen, dann `(0,eval)(await fwjs.files[0].text())` (getestet 24.11.2026). Edits mit Referenz: Bild per `file_upload` in den Asset-Dialog laden (neuestes steht vorn, per Dateigröße prüfen), dann `FWQ.addRef('<ID>', '<url>')`.
 
 ## 8. Offene Fragen
 - Wahl Storyboard FWSB-1 Eindecken / FWSB-2 Sturmnacht / FWSB-3 Von oben.

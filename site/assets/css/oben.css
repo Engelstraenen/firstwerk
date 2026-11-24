@@ -14,7 +14,7 @@
 .hud span:first-child{color:var(--accent);min-width:78px;text-align:center}
 .t{position:absolute;left:0;right:0;bottom:10vh;display:grid;gap:18px;max-width:1440px;opacity:0;will-change:opacity,transform}
 .t1{opacity:1}
-@media (max-width:700px){.t{bottom:7vh}.t .lead{font-size:16px}.hud{top:calc(28px + var(--nav) + 10px)}}
+@media (max-width:700px){.t{bottom:96px}.t .lead{font-size:16px}.hud{top:calc(28px + var(--nav) + 10px)}}
 @media (max-height:500px){.t .lead,.hud{display:none}.t .h1{font-size:44px}}
 
 /* Drohnen-Check */
