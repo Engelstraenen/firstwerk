@@ -60,3 +60,4 @@
 .cform input{min-height:52px;border-radius:14px;border:1px solid var(--line);background:#0b0d10;color:var(--ink);padding:0 16px;font:16px var(--f-body)}
 .cform h3{font:700 28px var(--f-head)}
 @media (max-width:860px){.fgrid{grid-template-columns:1fr}}
+@media (max-width:860px){.crew img{object-position:85% 50%}}
